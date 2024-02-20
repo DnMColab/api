@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id String @id @default(cuid())
+
+  email    String @unique
+  password String
+
+  username String @unique
+
+  profile Profile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id String @id @default(cuid())
+
+  bio         String?
+  avatarUrl   String?
+  profilename String   @unique
+  country     String
+  bithday     DateTime
+
+  followers Follow[] @relation("FollowingToFollow")
+  following Follow[] @relation("FollowerToFollow")
+
+  notes Note[]
+  likes Like[]
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Note {
+  id String @id @default(cuid())
+
+  body String
+
+  parent   Note?   @relation("replies", fields: [parentId], references: [id])
+  parentId String?
+
+  replies Note[] @relation("replies")
+
+  likes Like[]
+
+  tags Tag[] @relation("NoteToTag")
+
+  author   Profile @relation(fields: [authorId], references: [id])
+  authorId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  follower    Profile  @relation("FollowerToFollow", fields: [followerId], references: [id])
+  followerId  String
+  following   Profile  @relation("FollowingToFollow", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Like {
+  id String @id @default(cuid())
+
+  note   Note   @relation(fields: [noteId], references: [id])
+  noteId String
+
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id String @id @default(cuid())
+
+  name String @unique
+
+  notes Note[] @relation("NoteToTag")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
