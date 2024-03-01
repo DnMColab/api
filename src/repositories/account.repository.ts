@@ -1,54 +1,30 @@
+import { Prisma, PrismaClient } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+
 import {
   AccountCreateDTO,
   AccountDTO,
   AccountUpdateDTO,
 } from '../DTO/account.dto';
-import { PrismaClient } from '@prisma/client';
-import { hash } from 'bcrypt';
 
 @Injectable()
 export class AccountRepository {
-  constructor(private prismaService: PrismaClient) {}
+  constructor(private prisma: PrismaClient) {}
 
   async createAccount(data: AccountCreateDTO): Promise<AccountDTO> {
-    const existingAccount = await this.prismaService.account.findFirst({
-      where: {
-        OR: [
-          {
-            email: data.email,
-          },
-          {
-            username: data.username,
-          },
-        ],
-      },
-    });
-
-    if (existingAccount) {
-      return null;
-    }
-
-    data.password = await hash(data.password, 16);
-
-    return this.prismaService.account.create({
+    return this.prisma.account.create({
       data,
     });
   }
 
-  async getAccountBy(filter: {
-    email?: string;
-    username?: string;
-  }): Promise<AccountDTO> {
-    return this.prismaService.account.findFirst({
-      where: {
-        ...filter,
-      },
+  async getAccountBy(where: Prisma.AccountWhereInput): Promise<AccountDTO> {
+    return this.prisma.account.findFirst({
+      where,
     });
   }
 
   async getAccountById(id: string): Promise<AccountDTO> {
-    return this.prismaService.account.findUnique({
+    return this.prisma.account.findUnique({
       where: {
         id,
       },
@@ -56,7 +32,7 @@ export class AccountRepository {
   }
 
   async updateAccount(id: string, data: AccountUpdateDTO) {
-    return this.prismaService.account.update({
+    return this.prisma.account.update({
       where: {
         id,
       },
@@ -65,7 +41,7 @@ export class AccountRepository {
   }
 
   async deleteAccount(id: string) {
-    return this.prismaService.account.delete({
+    return this.prisma.account.delete({
       where: {
         id,
       },

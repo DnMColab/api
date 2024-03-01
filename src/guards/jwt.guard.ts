@@ -5,10 +5,15 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AuthPayloadDTO } from 'src/DTO/auth.dto';
+import { AccountRepository } from 'src/repositories/account.repository';
 
-Injectable();
+@Injectable()
 export class JwtGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private accountRepository: AccountRepository,
+  ) {}
 
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
@@ -18,14 +23,24 @@ export class JwtGuard implements CanActivate {
       throw new HttpException('Unauthorized', 401);
     }
 
-    const token = authHeader.split(' ')[1];
+    const [bearer, token] = authHeader.split(' ');
 
-    if (!token) {
+    if (bearer !== 'Bearer' || !token) {
       throw new HttpException('Unauthorized', 401);
     }
 
     try {
-      this.jwtService.verify(token);
+      const user: AuthPayloadDTO = this.jwtService.decode(
+        token,
+      ) as AuthPayloadDTO;
+
+      const account = this.accountRepository.getAccountById(user.id);
+
+      if (!account) {
+        throw new HttpException('Unauthorized', 401);
+      }
+
+      request.user = account;
     } catch (error) {
       throw new HttpException('Unauthorized', 401);
     }

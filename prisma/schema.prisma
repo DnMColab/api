@@ -26,9 +26,11 @@ model Profile {
 
   bio         String?
   avatarUrl   String?
-  profilename String   @unique
+  profileName String  @unique
   country     String
-  bithday     DateTime
+  birthday    String
+
+  verified Boolean @default(false)
 
   followers Follow[] @relation("FollowingToFollow")
   following Follow[] @relation("FollowerToFollow")

@@ -5,6 +5,9 @@ export interface ProfileDTO {
   avatarUrl?: string;
   profileName: string;
   country: string;
+  birthday: string;
+
+  verified: boolean;
 
   accountId: string;
 
@@ -15,13 +18,17 @@ export interface ProfileDTO {
 export interface ProfileCreateDTO {
   bio?: string;
   avatarUrl?: string;
-  profilename: string;
+  profileName: string;
   country: string;
+  birthday: string;
 }
 
 export interface ProfileUpdateDTO {
   bio?: string;
   avatarUrl?: string;
-  profilename?: string;
+  profileName?: string;
   country?: string;
+  birthday?: string;
+
+  verified?: boolean;
 }
