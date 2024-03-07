@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PrismaClient } from '@prisma/client';
+import { Module } from '@nestjs/common';
+
 import { AccountRepository } from 'src/repositories/account.repository';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-// import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { AuthService } from './auth.service';
     AccountRepository,
     JwtService,
     AuthService,
-    // ConfigService,
+    ConfigService,
   ],
 })
 export class AuthModule {}

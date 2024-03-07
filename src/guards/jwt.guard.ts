@@ -1,12 +1,13 @@
+import { JwtService } from '@nestjs/jwt';
 import {
   CanActivate,
   ExecutionContext,
   HttpException,
   Injectable,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AuthPayloadDTO } from 'src/DTO/auth.dto';
+
 import { AccountRepository } from 'src/repositories/account.repository';
+import { AuthPayloadDTO } from 'src/DTO/auth.dto';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -15,33 +16,40 @@ export class JwtGuard implements CanActivate {
     private accountRepository: AccountRepository,
   ) {}
 
-  canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
-
-    if (!authHeader) {
-      throw new HttpException('Unauthorized', 401);
-    }
-
-    const [bearer, token] = authHeader.split(' ');
-
-    if (bearer !== 'Bearer' || !token) {
-      throw new HttpException('Unauthorized', 401);
-    }
-
+  async canActivate(context: ExecutionContext) {
     try {
-      const user: AuthPayloadDTO = this.jwtService.decode(
-        token,
-      ) as AuthPayloadDTO;
+      const request = context.switchToHttp().getRequest();
+      const authHeader = request.headers.authorization;
 
-      const account = this.accountRepository.getAccountById(user.id);
-
-      if (!account) {
+      if (!authHeader) {
         throw new HttpException('Unauthorized', 401);
       }
 
-      request.user = account;
+      const [bearer, token] = authHeader.split(' ');
+
+      if (bearer !== 'Bearer' || !token) {
+        throw new HttpException('Unauthorized', 401);
+      }
+
+      const payload: AuthPayloadDTO = this.jwtService.verify(token, {
+        secret: process.env.JWT_REST_SECRET,
+      }) as AuthPayloadDTO;
+
+      if (!payload) {
+        throw new HttpException('Unauthorized', 401);
+      }
+
+      const existsAccount = await this.accountRepository.getAccountById(
+        payload.id,
+      );
+
+      if (!existsAccount) {
+        throw new HttpException('Unauthorized', 401);
+      }
+
+      request.account = { id: existsAccount.id };
     } catch (error) {
+      console.log('error', error);
       throw new HttpException('Unauthorized', 401);
     }
 

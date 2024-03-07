@@ -1,13 +1,21 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { hash } from 'bcrypt';
-import { AccountCreateDTO } from 'src/DTO/account.dto';
+
 import { AccountRepository } from 'src/repositories/account.repository';
+import { AccountCreateDTO } from 'src/DTO/account.dto';
+import { AccountModel } from 'src/models/account.model';
+
+const ACCOUNT_ALREADY_EXISTS_ERROR = 'Account already exists';
 
 @Injectable()
 export class AccountService {
-  constructor(private readonly accountRepository: AccountRepository) {}
+  constructor(
+    private readonly accountRepository: AccountRepository,
+    private readonly configService: ConfigService,
+  ) {}
 
-  public async createAccount(data: AccountCreateDTO) {
+  public async createAccount(data: AccountCreateDTO): Promise<AccountModel> {
     const existingAccount = await this.accountRepository.getAccountBy({
       OR: [
         {
@@ -22,14 +30,17 @@ export class AccountService {
     if (existingAccount) {
       throw new HttpException(
         {
-          message: 'Account already exists',
+          message: ACCOUNT_ALREADY_EXISTS_ERROR,
         },
-        400,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
-    data.password = await hash(data.password, 16);
+    const saltRounds = this.configService.get<number>('BCRYPT_SALT_ROUNDS', 16);
+    data.password = await hash(data.password, saltRounds);
 
-    return this.accountRepository.createAccount(data);
+    const account = await this.accountRepository.createAccount(data);
+
+    return new AccountModel(account);
   }
 }

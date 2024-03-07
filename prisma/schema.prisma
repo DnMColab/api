@@ -15,7 +15,8 @@ model Account {
 
   username String @unique
 
-  profile Profile?
+  profile         Profile?
+  securityRequest SecurityRequest?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -27,7 +28,6 @@ model Profile {
   bio         String?
   avatarUrl   String?
   profileName String  @unique
-  country     String
   birthday    String
 
   verified Boolean @default(false)
@@ -95,6 +95,19 @@ model Tag {
   name String @unique
 
   notes Note[] @relation("NoteToTag")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SecurityRequest {
+  id String @id @default(cuid())
+
+  token   String
+  expires BigInt
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

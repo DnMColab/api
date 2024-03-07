@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+
 import {
   ProfileCreateDTO,
   ProfileDTO,
@@ -38,6 +39,14 @@ export class ProfileRepository {
     return this.prisma.profile.findUnique({
       where: {
         id,
+      },
+    });
+  }
+
+  public async getProfileByAccountId(accountId: string): Promise<ProfileDTO> {
+    return this.prisma.profile.findFirst({
+      where: {
+        accountId,
       },
     });
   }

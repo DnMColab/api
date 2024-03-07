@@ -18,7 +18,6 @@ export class ProfileModel {
     profileName,
     bio,
     avatarUrl,
-    country,
     accountId,
     createdAt,
     updatedAt,
@@ -27,7 +26,6 @@ export class ProfileModel {
     this.profileName = profileName;
     this.bio = bio;
     this.avatarUrl = avatarUrl;
-    this.country = country;
     this.accountId = accountId;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
