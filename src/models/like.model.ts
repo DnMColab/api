@@ -1,4 +1,6 @@
 import { LikeDTO } from 'src/DTO/like.dto';
+import { NoteModel } from './note.model';
+import { ProfileModel } from './profile.model';
 
 export class LikeModel {
   id: string;
@@ -10,11 +12,17 @@ export class LikeModel {
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(data: LikeDTO) {
-    this.id = data.id;
-    this.noteId = data.noteId;
-    this.profileId = data.profileId;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
+  constructor({ id, noteId, profileId, createdAt, updatedAt }: LikeDTO) {
+    this.id = id;
+    this.noteId = noteId;
+    this.profileId = profileId;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+
+  static fromArray(
+    likes: (LikeDTO & { note: NoteModel; profile: ProfileModel })[],
+  ): LikeModel[] {
+    return likes.map((like) => new LikeModel(like));
   }
 }

@@ -12,9 +12,12 @@ export class AccountModel {
   constructor({ id, email, username, createdAt, updatedAt }: AccountDTO) {
     this.id = id;
     this.email = email;
-
     this.username = username;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+  }
+
+  static fromArray(accounts: AccountDTO[]): AccountModel[] {
+    return accounts.map((account) => new AccountModel(account));
   }
 }

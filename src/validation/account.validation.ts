@@ -11,23 +11,27 @@ const blockedDomains = [
   'mail.by',
 ];
 
-export const AccountCreateValidation: ZodObject<ZodRawShape> = z.object({
-  email: z
-    .string()
-    .email()
-    .refine(
-      (email) => {
-        const domain = email.split('@')[1];
-        return !blockedDomains.includes(domain);
-      },
-      {
-        message: 'Registration from this domain is not allowed.',
-      },
-    ),
-  password: z.string().min(8),
-  username: z.string().min(3),
-});
+export const AccountCreateValidation: ZodObject<ZodRawShape> = z
+  .object({
+    email: z
+      .string()
+      .email()
+      .refine(
+        (email) => {
+          const domain = email.split('@')[1];
+          return !blockedDomains.includes(domain);
+        },
+        {
+          message: 'Registration from this domain is not allowed.',
+        },
+      ),
+    password: z.string().min(8),
+    username: z.string().min(3),
+  })
+  .strict();
 
-export const AccountUpdateValidation: ZodObject<ZodRawShape> = z.object({
-  username: z.string().min(3).optional(),
-});
+export const AccountUpdateValidation: ZodObject<ZodRawShape> = z
+  .object({
+    username: z.string().min(3).optional(),
+  })
+  .strict();

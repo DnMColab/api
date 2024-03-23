@@ -1,20 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 
 import { AccountRepository } from 'src/repositories/account.repository';
+import { TokenManageService } from 'src/utils/jwt.util';
 import { AuthDTO } from 'src/DTO/auth.dto';
-import { ConfigService } from '@nestjs/config';
 
 const INVALID_CREDENTIALS_ERROR = 'Invalid credentials';
-const INVALID_TOKEN_ERROR = 'Invalid token';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountRepository: AccountRepository,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private tokenService: TokenManageService,
   ) {}
 
   public async login(credentials: AuthDTO): Promise<{ accessToken: string }> {
@@ -24,39 +21,41 @@ export class AuthService {
 
     if (!account || !(await compare(credentials.password, account.password))) {
       throw new HttpException(
-        { message: INVALID_CREDENTIALS_ERROR },
+        INVALID_CREDENTIALS_ERROR,
         HttpStatus.UNAUTHORIZED,
       );
     }
 
-    const accessToken = this.jwtService.sign(
-      { id: account.id },
-      { secret: this.configService.get<string>('JWT_REST_SECRET') },
-    );
+    const accessToken = this.tokenService.generateRestApiToken({
+      id: account.id,
+    });
 
     return { accessToken };
   }
 
-  public async refresh(token: string) {
-    const payload = this.jwtService.verify(token, {
-      secret: this.configService.get<string>('JWT_REST_SECRET'),
+  public async wsLogin(credentials: AuthDTO): Promise<{ accessToken: string }> {
+    const account = await this.accountRepository.getAccountBy({
+      email: credentials.email,
     });
 
-    const accountExists = await this.accountRepository.getAccountBy({
-      id: payload.id,
-    });
-
-    if (!accountExists) {
+    if (!account || !(await compare(credentials.password, account.password))) {
       throw new HttpException(
-        { message: INVALID_TOKEN_ERROR },
+        INVALID_CREDENTIALS_ERROR,
         HttpStatus.UNAUTHORIZED,
       );
     }
 
-    const accessToken = this.jwtService.sign(
-      { id: accountExists.id },
-      { secret: this.configService.get<string>('JWT_REST_SECRET') },
-    );
+    const accessToken = this.tokenService.generateWSApiToken({
+      id: account.id,
+    });
+
+    return { accessToken };
+  }
+
+  public async refresh(accountId: string) {
+    const accessToken = this.tokenService.generateRestApiToken({
+      id: accountId,
+    });
 
     return { accessToken };
   }

@@ -6,6 +6,7 @@ import { AccountRepository } from 'src/repositories/account.repository';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
+import { TokenManageService } from 'src/utils/jwt.util';
 
 @Module({
   imports: [
@@ -19,11 +20,12 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [AuthController],
   providers: [
-    PrismaClient,
+    TokenManageService,
     AccountRepository,
-    JwtService,
-    AuthService,
     ConfigService,
+    PrismaClient,
+    AuthService,
+    JwtService,
   ],
 })
 export class AuthModule {}

@@ -14,4 +14,8 @@ export class TagModel {
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
+
+  static fromArray(tags: TagDTO[]): TagModel[] {
+    return tags.map((tag) => new TagModel(tag));
+  }
 }

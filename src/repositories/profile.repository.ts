@@ -53,13 +53,15 @@ export class ProfileRepository {
 
   public async getProfilesBy(
     where: Prisma.ProfileWhereInput,
-    orderBy?:
-      | Prisma.ProfileOrderByWithAggregationInput
-      | Prisma.ProfileOrderByWithRelationInput,
+    orderBy?: Prisma.ProfileOrderByWithAggregationInput,
+    skip?: number,
+    take?: number,
   ): Promise<ProfileDTO[]> {
     return this.prisma.profile.findMany({
       where,
       orderBy,
+      skip,
+      take,
     });
   }
 

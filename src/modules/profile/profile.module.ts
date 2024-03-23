@@ -11,11 +11,11 @@ import { ProfileService } from './profile.service';
   imports: [],
   controllers: [ProfileController],
   providers: [
-    PrismaClient,
-    AccountRepository,
-    JwtService,
     ProfileRepository,
+    AccountRepository,
     ProfileService,
+    PrismaClient,
+    JwtService,
   ],
 })
 export class ProfileModule {}

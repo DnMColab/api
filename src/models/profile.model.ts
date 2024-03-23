@@ -6,7 +6,6 @@ export class ProfileModel {
   public profileName: string;
   public bio?: string;
   public avatarUrl?: string;
-  public country: string;
 
   public accountId: string;
 
@@ -29,5 +28,21 @@ export class ProfileModel {
     this.accountId = accountId;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+  }
+
+  static fromArray(profiles: ProfileDTO[]): ProfileModel[] {
+    return profiles.map((profile) => new ProfileModel(profile));
+  }
+
+  public forEmbedded() {
+    return {
+      id: this.id,
+      profileName: this.profileName,
+      bio: this.bio,
+      avatarUrl: this.avatarUrl,
+      accountId: this.accountId,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
   }
 }

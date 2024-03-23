@@ -1,6 +1,6 @@
 import { FollowDTO } from '../DTO/follow.dto';
 
-export class Follow {
+export class FollowModel {
   id: string;
 
   followerId: string;
@@ -16,5 +16,9 @@ export class Follow {
     this.followingId = follow.followingId;
     this.createdAt = follow.createdAt;
     this.updatedAt = follow.updatedAt;
+  }
+
+  static fromArray(follows: FollowDTO[]): FollowModel[] {
+    return follows.map((follow) => new FollowModel(follow));
   }
 }

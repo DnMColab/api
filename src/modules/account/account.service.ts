@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { hash } from 'bcrypt';
 
 import { AccountRepository } from 'src/repositories/account.repository';
+import { ProfileRepository } from 'src/repositories/profile.repository';
 import { AccountCreateDTO } from 'src/DTO/account.dto';
 import { AccountModel } from 'src/models/account.model';
 
@@ -12,6 +13,7 @@ const ACCOUNT_ALREADY_EXISTS_ERROR = 'Account already exists';
 export class AccountService {
   constructor(
     private readonly accountRepository: AccountRepository,
+    private readonly profileRepository: ProfileRepository,
     private readonly configService: ConfigService,
   ) {}
 
@@ -29,9 +31,7 @@ export class AccountService {
 
     if (existingAccount) {
       throw new HttpException(
-        {
-          message: ACCOUNT_ALREADY_EXISTS_ERROR,
-        },
+        ACCOUNT_ALREADY_EXISTS_ERROR,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -42,5 +42,13 @@ export class AccountService {
     const account = await this.accountRepository.createAccount(data);
 
     return new AccountModel(account);
+  }
+
+  public async getAccount(accountId: string) {
+    const account = await this.accountRepository.getAccountById(accountId);
+
+    return new AccountModel({
+      ...account,
+    });
   }
 }

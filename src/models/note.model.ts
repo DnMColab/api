@@ -25,10 +25,14 @@ export class NoteModel {
   }: NoteDTO) {
     this.id = id;
     this.body = body;
-    this.parentId = parentId;
+    this.parentId = parentId ?? id;
     this.authorId = authorId;
     this.tags = tags?.map((tag) => new TagModel(tag));
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+  }
+
+  static fromArray(notes: NoteDTO[]): NoteModel[] {
+    return notes.map((note) => new NoteModel(note));
   }
 }

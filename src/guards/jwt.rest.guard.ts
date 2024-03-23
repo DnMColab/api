@@ -49,7 +49,6 @@ export class JwtGuard implements CanActivate {
 
       request.account = { id: existsAccount.id };
     } catch (error) {
-      console.log('error', error);
       throw new HttpException('Unauthorized', 401);
     }
 

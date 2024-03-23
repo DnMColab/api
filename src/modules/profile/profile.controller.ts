@@ -1,11 +1,30 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 
-import { ProfileCreateValidation } from 'src/validation/profile.validation';
-import { ProfileCreateDTO, ProfileCreateDTOSchema } from 'src/DTO/profile.dto';
-import { JwtGuard } from 'src/guards/jwt.guard';
+import {
+  ProfileCreateValidation,
+  ProfileUpdateValidation,
+  ProfilesGetValidation,
+} from 'src/validation/profile.validation';
+import {
+  ProfileCreatePath,
+  ProfileGetByIdPath,
+  ProfileGetCurrentPath,
+  ProfilesGetPath,
+} from 'src/swagger/paths/profile.paths';
+import { ProfileCreateDTO, ProfileUpdateDTO } from 'src/DTO/profile.dto';
+import { JwtGuard } from 'src/guards/jwt.rest.guard';
+import { ProfileSearchParameters, ProfileService } from './profile.service';
 import { ZodPipe } from 'src/pipes/zod.pipe';
-import { ProfileService } from './profile.service';
-import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
+import { ProfileExistGuard } from 'src/guards/profileexist.guard';
 
 @Controller('profile')
 export class ProfileController {
@@ -13,16 +32,42 @@ export class ProfileController {
 
   @UseGuards(JwtGuard)
   @Post('/create')
-  @ApiOperation({
-    operationId: 'proto.rest.profile.create',
-    summary: 'Create a new profile',
-  })
-  @ApiBearerAuth('Bearer')
-  @ApiBody({ type: ProfileCreateDTOSchema })
+  @ProfileCreatePath()
   public async createProfile(
     @Body(new ZodPipe(ProfileCreateValidation)) data: ProfileCreateDTO,
     @Req() req: Request & { account: { id: string } },
   ) {
     return this.profileService.createProfile(data, req.account.id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Put('/update')
+  public async updateProfile(
+    @Body(new ZodPipe(ProfileUpdateValidation)) data: ProfileUpdateDTO,
+    @Req() req: Request & { account: { id: string } },
+  ) {
+    return this.profileService.updateProfile(data, req.account.id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Get('/')
+  @ProfileGetCurrentPath()
+  public async getProfile(@Req() req: Request & { account: { id: string } }) {
+    return this.profileService.getProfile(req.account.id);
+  }
+
+  @Get('/search')
+  @ProfilesGetPath()
+  public async getProfiles(
+    @Body(new ZodPipe(ProfilesGetValidation))
+    data: ProfileSearchParameters,
+  ) {
+    return this.profileService.getProfiles(data);
+  }
+
+  @Get('/:id')
+  @ProfileGetByIdPath()
+  public async getProfileById(@Param('id') id: string) {
+    return this.profileService.getProfileById(id);
   }
 }
