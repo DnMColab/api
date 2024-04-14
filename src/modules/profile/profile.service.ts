@@ -1,8 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+
 import { ProfileCreateDTO, ProfileUpdateDTO } from 'src/DTO/profile.dto';
-import { ProfileModel } from 'src/models/profile.model';
 import { ProfileRepository } from 'src/repositories/profile.repository';
+import { FollowRepository } from 'src/repositories/follow.repository';
+import { ProfileModel } from 'src/models/profile.model';
+import { FollowModel } from 'src/models/follow.model';
 
 const PROFILE_ALREADY_EXISTS_ERROR = 'Profile already exists';
 const PROFILE_NOT_FOUND_ERROR = 'Profile not found';
@@ -16,7 +19,10 @@ export interface ProfileSearchParameters {
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly profileRepository: ProfileRepository) {}
+  constructor(
+    private readonly profileRepository: ProfileRepository,
+    private readonly followRepository: FollowRepository,
+  ) {}
 
   public async getProfiles(
     { where, orderBy, skip, take }: ProfileSearchParameters = {
@@ -33,7 +39,10 @@ export class ProfileService {
       take,
     );
 
-    return ProfileModel.fromArray(profiles);
+    return {
+      count: profiles.length,
+      profiles: ProfileModel.fromArray(profiles),
+    };
   }
 
   public async getProfileById(id: string) {
@@ -56,7 +65,12 @@ export class ProfileService {
     const profileExists =
       await this.profileRepository.getProfileByAccountId(accountId);
 
-    if (profileExists) {
+    const profileExistsByProfileName =
+      await this.profileRepository.getProfileBy({
+        profileName: data.profileName,
+      });
+
+    if (profileExists || profileExistsByProfileName) {
       throw new HttpException(
         PROFILE_ALREADY_EXISTS_ERROR,
         HttpStatus.BAD_REQUEST,
@@ -82,5 +96,65 @@ export class ProfileService {
     );
 
     return new ProfileModel(updatedProfile);
+  }
+
+  public async followProfile(profileId: string, accountId: string) {
+    const profile = await this.profileRepository.getProfileById(profileId);
+
+    const account =
+      await this.profileRepository.getProfileByAccountId(accountId);
+
+    if (!profile) {
+      throw new HttpException(PROFILE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
+    }
+
+    const isFollowing = await this.followRepository.isFollowing(
+      profileId,
+      account.id,
+    );
+
+    if (isFollowing) {
+      throw new HttpException('Already following', HttpStatus.BAD_REQUEST);
+    }
+
+    const follow = await this.followRepository.followProfile(
+      profileId,
+      account.id,
+    );
+
+    return new FollowModel(follow);
+  }
+
+  public async unfollowProfile(profileId: string, accountId: string) {
+    const profile = await this.profileRepository.getProfileById(profileId);
+
+    const account =
+      await this.profileRepository.getProfileByAccountId(accountId);
+
+    if (!profile) {
+      throw new HttpException(PROFILE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
+    }
+
+    await this.followRepository.unfollowProfile(profileId, account.id);
+
+    return { message: 'Unfollowed' };
+  }
+
+  public async getFollowers(profileId: string) {
+    const followers = await this.followRepository.getFollowers(profileId);
+
+    return {
+      count: followers.length,
+      followers: FollowModel.fromArray(followers),
+    };
+  }
+
+  public async getFollowing(profileId: string) {
+    const following = await this.followRepository.getFollowing(profileId);
+
+    return {
+      count: following.length,
+      following: FollowModel.fromArray(following),
+    };
   }
 }

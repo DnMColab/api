@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 import { SecurityRequestRepository } from 'src/repositories/security.repository';
 import { ProfileRepository } from 'src/repositories/profile.repository';
+import { RequestType } from '@prisma/client';
 
 export const VERIFICATION_EMAIL_ALREADY_SENT_ERROR =
   'Verification email already sent';
@@ -27,7 +28,7 @@ export class Utils {
 
     if (!securityRequest && mustExist) {
       throw new HttpException(
-        { message: VERIFICATION_REQUEST_NOT_FOUND_ERROR },
+        VERIFICATION_REQUEST_NOT_FOUND_ERROR,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -38,14 +39,14 @@ export class Utils {
         securityRequest.token,
       );
       throw new HttpException(
-        { message: VERIFICATION_REQUEST_EXPIRED_ERROR },
+        VERIFICATION_REQUEST_EXPIRED_ERROR,
         HttpStatus.UNAUTHORIZED,
       );
     }
 
     if (!mustExist && securityRequest) {
       throw new HttpException(
-        { message: VERIFICATION_EMAIL_ALREADY_SENT_ERROR },
+        VERIFICATION_EMAIL_ALREADY_SENT_ERROR,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -53,19 +54,19 @@ export class Utils {
     return securityRequest;
   }
 
-  public async checkProfile(accountId: string) {
+  public async checkProfile(accountId: string, requestType: RequestType) {
     const profile =
       await this.profileRepository.getProfileByAccountId(accountId);
 
     if (!profile) {
-      throw new HttpException(
-        { message: PROFILE_NOT_FOUND_ERROR },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException(PROFILE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
     }
 
-    if (profile.verified) {
-      return null;
+    if (profile.verified && requestType === RequestType.EMAIL_VERIFICATION) {
+      throw new HttpException(
+        PROFILE_ALREADY_VERIFIED_ERROR,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return profile;

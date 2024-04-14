@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RequestType } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+
 import { AuthPayloadDTO } from 'src/DTO/auth.dto';
 
 @Injectable()
@@ -10,42 +12,38 @@ export class TokenManageService {
     public readonly jwtService: JwtService,
   ) {}
 
-  public generateRestApiToken(payload: AuthPayloadDTO) {
+  public generateRestApiToken(payload: AuthPayloadDTO): string {
     return this.jwtService.sign(payload, {
       expiresIn: '1d',
       secret: this.configService.get<string>('JWT_REST_SECRET'),
     });
   }
 
-  public generateWSApiToken(payload: AuthPayloadDTO) {
-    return this.jwtService.sign(payload, {
-      expiresIn: '1d',
-      secret: this.configService.get<string>('JWT_WS_SECRET'),
-    });
+  public generateRequestToken(
+    payload: AuthPayloadDTO,
+    type: RequestType,
+  ): string {
+    return this.jwtService.sign(
+      {
+        ...payload,
+        type,
+      },
+      {
+        expiresIn: '1d',
+        secret: this.configService.get<string>('JWT_REQUEST_SECRET'),
+      },
+    );
   }
 
-  public generateVerificationToken(payload: AuthPayloadDTO) {
-    return this.jwtService.sign(payload, {
-      expiresIn: '1d',
-      secret: this.configService.get<string>('JWT_VERIFICATION_SECRET'),
-    });
-  }
-
-  public verifyRestApiToken(token: string) {
+  public verifyRestApiToken(token: string): AuthPayloadDTO {
     return this.jwtService.verify(token, {
       secret: this.configService.get<string>('JWT_REST_SECRET'),
     });
   }
 
-  public verifyWSApiToken(token: string) {
+  public verifyRequestToken(token: string): AuthPayloadDTO & { type: string } {
     return this.jwtService.verify(token, {
-      secret: this.configService.get<string>('JWT_WS_SECRET'),
-    });
-  }
-
-  public verifyVerificationToken(token: string) {
-    return this.jwtService.verify(token, {
-      secret: this.configService.get<string>('JWT_VERIFICATION_SECRET'),
+      secret: this.configService.get<string>('JWT_REQUEST_SECRET'),
     });
   }
 }

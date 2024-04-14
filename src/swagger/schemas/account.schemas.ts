@@ -8,42 +8,39 @@ import {
 } from 'src/DTO/account.dto';
 
 export class AccountDTOSchema implements AccountDTO {
-  @ApiProperty()
+  @ApiProperty({ format: 'cuid' })
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'email' })
   email: string;
 
-  @ApiProperty({ required: false })
-  password?: string;
-
-  @ApiProperty()
+  @ApiProperty({ minLength: 4, maxLength: 32 })
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date-time' })
   updatedAt: Date;
 }
 
 export class AccountCreateDTOSchema implements AccountCreateDTO {
-  @ApiProperty()
+  @ApiProperty({ format: 'email' })
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ minLength: 8, maxLength: 32 })
   password: string;
 
-  @ApiProperty()
+  @ApiProperty({ minLength: 4, maxLength: 32 })
   username: string;
 }
 
 export class AccountUpdateDTOSchema implements AccountUpdateDTO {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, minLength: 4, maxLength: 32 })
   username?: string;
 }
 
 export class AccountDeleteDTOSchema implements AccountDeleteDTO {
-  @ApiProperty()
+  @ApiProperty({ format: 'cuid' })
   id: string;
 }

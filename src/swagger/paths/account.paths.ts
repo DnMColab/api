@@ -1,5 +1,11 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiBody,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { AccountCreateDTOSchema } from '../schemas/account.schemas';
 
 export function AccountRegisterPath() {
@@ -30,5 +36,16 @@ export function AccountRegisterPath() {
       status: 201,
       schema: { type: 'object', properties: { id: { type: 'string' } } },
     }),
+  );
+}
+
+export function AccountGetByIdPath() {
+  return applyDecorators(
+    ApiOperation({
+      operationId: 'proto.rest.account.getById',
+      summary: 'Get an account by id',
+    }),
+    ApiBearerAuth('Bearer'),
+    ApiParam({ name: 'id', type: 'string', description: 'Account id' }),
   );
 }

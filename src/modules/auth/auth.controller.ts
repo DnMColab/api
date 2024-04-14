@@ -1,5 +1,5 @@
-import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { AuthValidation } from 'src/validation/auth.validation';
 import { JwtGuard } from 'src/guards/jwt.rest.guard';
@@ -20,13 +20,6 @@ export class AuthController {
   @RestAuthPath()
   public async login(@Body(new ZodPipe(AuthValidation)) credentials: AuthDTO) {
     return this.authService.login(credentials);
-  }
-
-  @Post('/ws')
-  public async wsLogin(
-    @Body(new ZodPipe(AuthValidation)) credentials: AuthDTO,
-  ) {
-    return this.authService.wsLogin(credentials);
   }
 
   @UseGuards(JwtGuard)

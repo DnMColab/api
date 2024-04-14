@@ -105,6 +105,7 @@ model SecurityRequest {
   id String @id @default(cuid())
 
   token   String
+  type    RequestType
   expires BigInt
 
   account   Account @relation(fields: [accountId], references: [id])
@@ -112,4 +113,10 @@ model SecurityRequest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum RequestType {
+  PASSWORD_RESET
+  EMAIL_CHANGE
+  EMAIL_VERIFICATION
 }

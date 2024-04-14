@@ -33,25 +33,6 @@ export class AuthService {
     return { accessToken };
   }
 
-  public async wsLogin(credentials: AuthDTO): Promise<{ accessToken: string }> {
-    const account = await this.accountRepository.getAccountBy({
-      email: credentials.email,
-    });
-
-    if (!account || !(await compare(credentials.password, account.password))) {
-      throw new HttpException(
-        INVALID_CREDENTIALS_ERROR,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    const accessToken = this.tokenService.generateWSApiToken({
-      id: account.id,
-    });
-
-    return { accessToken };
-  }
-
   public async refresh(accountId: string) {
     const accessToken = this.tokenService.generateRestApiToken({
       id: accountId,

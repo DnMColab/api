@@ -33,6 +33,12 @@ export class NoteModel {
   }
 
   static fromArray(notes: NoteDTO[]): NoteModel[] {
-    return notes.map((note) => new NoteModel(note));
+    return notes.map(
+      (note) =>
+        new NoteModel({
+          ...note,
+          tags: note.tags?.map((tag) => new TagModel(tag)),
+        }),
+    );
   }
 }

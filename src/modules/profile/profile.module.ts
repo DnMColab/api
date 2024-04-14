@@ -6,6 +6,7 @@ import { ProfileRepository } from 'src/repositories/profile.repository';
 import { ProfileController } from './profile.controller';
 import { AccountRepository } from 'src/repositories/account.repository';
 import { ProfileService } from './profile.service';
+import { FollowRepository } from 'src/repositories/follow.repository';
 
 @Module({
   imports: [],
@@ -13,6 +14,7 @@ import { ProfileService } from './profile.service';
   providers: [
     ProfileRepository,
     AccountRepository,
+    FollowRepository,
     ProfileService,
     PrismaClient,
     JwtService,

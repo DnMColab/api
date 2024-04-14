@@ -12,12 +12,26 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { NoteCreateValidation } from 'src/validation/note.validation';
+import {
+  NoteCreateValidation,
+  NoteUpdateValidation,
+} from 'src/validation/note.validation';
 import { ProfileExistGuard } from 'src/guards/profileexist.guard';
 import { JwtGuard } from 'src/guards/jwt.rest.guard';
 import { NoteCreateDTO } from 'src/DTO/note.dto';
 import { NoteService } from './note.service';
 import { ZodPipe } from 'src/pipes/zod.pipe';
+import {
+  NoteCreatePath,
+  NoteDeletePath,
+  NoteGetByIdPath,
+  NoteGetFeedPath,
+  NoteUpdatePath,
+  NotesGetByAuthorIdPath,
+  NotesGetByParentIdPath,
+  NotesGetByTagsPath,
+  NotesSearchPath,
+} from 'src/swagger/paths/note.paths';
 
 @Controller('note')
 export class NoteController {
@@ -25,6 +39,7 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Post('/create')
+  @NoteCreatePath()
   public async createNote(
     @Req() req: Request & { account: { id: string } },
     @Body(new ZodPipe(NoteCreateValidation)) body: NoteCreateDTO,
@@ -33,7 +48,19 @@ export class NoteController {
   }
 
   @UseGuards(JwtGuard, ProfileExistGuard)
+  @Get('/search/')
+  @NotesSearchPath()
+  public async searchNotes(
+    @Query('query') query: string,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+  ) {
+    return this.noteService.searchNotes(query, skip ?? 0, take ?? 50);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/feed')
+  @NoteGetFeedPath()
   public async getFeed(
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -43,6 +70,7 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/search/tags')
+  @NotesGetByTagsPath()
   public async getNotesByTags(
     @Query('tags') tags: string[],
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
@@ -53,6 +81,7 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/search/parent/:parentId')
+  @NotesGetByParentIdPath()
   public async getNotesByParentId(
     @Param('parentId') parentId: string,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
@@ -63,6 +92,7 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/search/author/:authorId')
+  @NotesGetByAuthorIdPath()
   public async getNotesByAuthorId(
     @Param('authorId') authorId: string,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
@@ -73,15 +103,17 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/:noteId')
+  @NoteGetByIdPath()
   public async getNoteById(@Param('noteId') noteId: string) {
     return this.noteService.getNoteById(noteId);
   }
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Put('/:noteId')
+  @NoteUpdatePath()
   public async updateNote(
     @Param('noteId') noteId: string,
-    @Body(new ZodPipe(NoteCreateValidation)) body: NoteCreateDTO,
+    @Body(new ZodPipe(NoteUpdateValidation)) body: NoteCreateDTO,
     @Req() req: Request & { account: { id: string } },
   ) {
     return this.noteService.updateNote(noteId, body, req.account.id);
@@ -89,6 +121,7 @@ export class NoteController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Delete('/:noteId')
+  @NoteDeletePath()
   public async deleteNote(
     @Param('noteId') noteId: string,
     @Req() req: Request & { account: { id: string } },

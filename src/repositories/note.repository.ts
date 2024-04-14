@@ -1,20 +1,23 @@
 import { PrismaClient } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { NoteCreateDTO, NoteUpdateDTO } from 'src/DTO/note.dto';
+import { NoteCreateDTO, NoteDTO, NoteUpdateDTO } from 'src/DTO/note.dto';
 import { TagRepository } from './tag.repository';
 
 @Injectable()
 export class NoteRepository {
   constructor(
-    private readonly prismaClient: PrismaClient,
+    private readonly prisma: PrismaClient,
     private readonly tagRepository: TagRepository,
   ) {}
 
-  public async create(newNote: NoteCreateDTO, profileId: string) {
+  public async create(
+    newNote: NoteCreateDTO,
+    profileId: string,
+  ): Promise<NoteDTO> {
     const { tags, parentId, ...note } = newNote;
 
-    const createdNote = await this.prismaClient.note.create({
+    const createdNote = await this.prisma.note.create({
       data: {
         ...note,
         author: {
@@ -22,35 +25,61 @@ export class NoteRepository {
             id: profileId,
           },
         },
-      },
-    });
-
-    this.prismaClient.note.update({
-      where: {
-        id: createdNote.id,
-      },
-      data: {
-        parentId: parentId ?? createdNote.id,
-      },
-    });
-
-    let updatedNote;
-
-    if (tags) {
-      updatedNote = await this.updateNote(
-        {
-          ...createdNote,
-          tags,
+        tags: {
+          connectOrCreate: tags.map((tag) => ({
+            where: { name: tag },
+            create: { name: tag },
+          })),
         },
-        createdNote.id,
-      );
-    }
+        parent: parentId
+          ? {
+              connect: {
+                id: parentId,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        tags: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
-    return updatedNote;
+    return createdNote;
   }
 
-  public async getNotes(skip: number = 0, take: number = 10) {
-    return this.prismaClient.note.findMany({
+  public async searchNotes(
+    query: string,
+    skip: number = 0,
+    take: number = 50,
+  ): Promise<NoteDTO[]> {
+    return this.prisma.note.findMany({
+      where: {
+        body: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      include: {
+        tags: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      skip,
+      take,
+    });
+  }
+
+  public async getNotes(
+    skip: number = 0,
+    take: number = 10,
+  ): Promise<NoteDTO[]> {
+    return this.prisma.note.findMany({
       include: {
         tags: {
           select: {
@@ -66,8 +95,8 @@ export class NoteRepository {
     });
   }
 
-  public async getNoteById(id: string) {
-    return this.prismaClient.note.findUnique({
+  public async getNoteById(id: string): Promise<NoteDTO> {
+    return this.prisma.note.findUnique({
       where: {
         id,
       },
@@ -85,8 +114,8 @@ export class NoteRepository {
     authorId: string,
     skip: number = 0,
     take: number = 50,
-  ) {
-    return this.prismaClient.note.findMany({
+  ): Promise<NoteDTO[]> {
+    return this.prisma.note.findMany({
       where: {
         authorId,
       },
@@ -109,8 +138,8 @@ export class NoteRepository {
     parentId: string,
     skip: number = 0,
     take: number = 50,
-  ) {
-    return this.prismaClient.note.findMany({
+  ): Promise<NoteDTO[]> {
+    return this.prisma.note.findMany({
       where: {
         parentId,
       },
@@ -133,8 +162,8 @@ export class NoteRepository {
     tags: string[],
     skip: number = 0,
     take: number = 50,
-  ) {
-    return this.prismaClient.note.findMany({
+  ): Promise<NoteDTO[]> {
+    return this.prisma.note.findMany({
       where: {
         tags: {
           some: {
@@ -159,10 +188,13 @@ export class NoteRepository {
     });
   }
 
-  public async updateNote(data: NoteUpdateDTO, noteId: string) {
+  public async updateNote(
+    data: NoteUpdateDTO,
+    noteId: string,
+  ): Promise<NoteDTO> {
     const { tags, ...note } = data;
 
-    const updatedNote = await this.prismaClient.note.update({
+    const updatedNote = await this.prisma.note.update({
       where: {
         id: noteId,
       },
@@ -170,7 +202,7 @@ export class NoteRepository {
     });
 
     if (tags) {
-      await this.prismaClient.note.update({
+      await this.prisma.note.update({
         where: {
           id: noteId,
         },
@@ -195,8 +227,8 @@ export class NoteRepository {
     return updatedNote;
   }
 
-  public async deleteNoteById(id: string) {
-    return this.prismaClient.note.delete({
+  public async deleteNoteById(id: string): Promise<NoteDTO> {
+    return this.prisma.note.delete({
       where: {
         id,
       },

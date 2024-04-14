@@ -1,12 +1,20 @@
-import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+
+import { TagDTO } from 'src/DTO/tag.dto';
 
 @Injectable()
 export class TagRepository {
-  constructor(private readonly prismaService: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
-  createTag({ name, noteId }: { name: string; noteId: string }) {
-    return this.prismaService.tag.create({
+  createTag({
+    name,
+    noteId,
+  }: {
+    name: string;
+    noteId: string;
+  }): Promise<TagDTO> {
+    return this.prisma.tag.create({
       data: {
         name,
         notes: {

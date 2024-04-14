@@ -5,10 +5,17 @@ import { TokenManageService } from 'src/utils/jwt.util';
 import { MailService } from 'src/utils/mail.util';
 
 import {
-  PROFILE_ALREADY_VERIFIED_ERROR,
   VERIFICATION_EMAIL_ALREADY_SENT_ERROR,
   Utils,
+  VERIFICATION_REQUEST_NOT_FOUND_ERROR,
 } from './utils';
+import { RequestType } from '@prisma/client';
+
+const mailReasons = {
+  [RequestType.EMAIL_VERIFICATION]: 'Email verification',
+  [RequestType.EMAIL_CHANGE]: 'Email change',
+  [RequestType.PASSWORD_RESET]: 'Password reset',
+};
 
 @Injectable()
 export class RequestsSecurityService {
@@ -20,51 +27,74 @@ export class RequestsSecurityService {
     private readonly tokenService: TokenManageService,
   ) {}
 
-  async verificationRequest(accountId: string) {
+  async makeRequest(requestType: RequestType, accountId: string) {
+    if (!requestType || !(requestType in RequestType)) {
+      throw new HttpException('Invalid request type', HttpStatus.BAD_REQUEST);
+    }
+
     const account = await this.accountRepository.getAccountById(accountId);
 
-    const profile = await this.utils.checkProfile(accountId);
+    await this.utils.checkProfile(accountId, requestType);
 
-    if (!profile) {
-      throw new HttpException(
-        { message: PROFILE_ALREADY_VERIFIED_ERROR },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const securityRequest =
+    const request =
       await this.securityRequestRepository.getByAccountId(accountId);
 
-    if (securityRequest && securityRequest.expires > Date.now()) {
+    if (
+      request &&
+      request.expires > Date.now() &&
+      requestType === request.type
+    ) {
       throw new HttpException(
-        { message: VERIFICATION_EMAIL_ALREADY_SENT_ERROR },
+        VERIFICATION_EMAIL_ALREADY_SENT_ERROR,
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    if (securityRequest) {
-      await this.securityRequestRepository.delete(
-        accountId,
-        securityRequest.token,
-      );
+    if (request && request.expires < Date.now()) {
+      await this.securityRequestRepository.delete(accountId, request.token);
     }
 
-    const token = this.tokenService.generateVerificationToken({
-      id: account.id,
-    });
+    const token = this.tokenService.generateRequestToken(
+      { id: accountId },
+      requestType,
+    );
 
-    const expires = Date.now() + 3600000;
+    await this.mailService.sendMail(
+      account.email,
+      {
+        subject: mailReasons[requestType],
+        link: `http://localhost:3000/verify/${token}`,
+      },
+      requestType,
+    );
 
     await this.securityRequestRepository.create(accountId, {
       token,
-      expires,
+      expires: Date.now() + 1000 * 60 * 60 * 24,
+      type: requestType,
     });
 
-    await this.mailService.sendVerificationEmail(account.email, {
-      id: account.id,
-      token,
-    });
+    return { message: 'Request succesfully sent' };
+  }
 
-    return { message: 'Verification email sent' };
+  async rejectVerificationRequest(
+    accountId: string,
+  ): Promise<{ message: string }> {
+    const securityRequest =
+      await this.securityRequestRepository.getByAccountId(accountId);
+
+    if (!securityRequest) {
+      throw new HttpException(
+        VERIFICATION_REQUEST_NOT_FOUND_ERROR,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    await this.securityRequestRepository.delete(
+      accountId,
+      securityRequest.token,
+    );
+
+    return { message: 'Request rejected successfully' };
   }
 }

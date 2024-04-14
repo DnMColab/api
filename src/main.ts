@@ -13,6 +13,8 @@ async function bootstrap() {
     res.json(document);
   });
 
+  SwaggerModule.setup('swagger', app, document);
+
   await app.listen(3000);
 }
 bootstrap();

@@ -4,7 +4,7 @@ import { hash } from 'bcrypt';
 
 import { AccountRepository } from 'src/repositories/account.repository';
 import { ProfileRepository } from 'src/repositories/profile.repository';
-import { AccountCreateDTO } from 'src/DTO/account.dto';
+import { AccountCreateDTO, AccountUpdateDTO } from 'src/DTO/account.dto';
 import { AccountModel } from 'src/models/account.model';
 
 const ACCOUNT_ALREADY_EXISTS_ERROR = 'Account already exists';
@@ -50,5 +50,14 @@ export class AccountService {
     return new AccountModel({
       ...account,
     });
+  }
+
+  public async updateAccount(data: AccountUpdateDTO, accountId: string) {
+    const updateAccount = await this.accountRepository.updateAccount(
+      accountId,
+      data,
+    );
+
+    return new AccountModel(updateAccount);
   }
 }

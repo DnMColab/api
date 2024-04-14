@@ -8,11 +8,8 @@ export class TagModel {
   public readonly createdAt: Date;
   public updatedAt: Date;
 
-  constructor({ id, name, createdAt, updatedAt }: TagDTO) {
-    this.id = id;
+  constructor({ name }: { name: string }) {
     this.name = name;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
   }
 
   static fromArray(tags: TagDTO[]): TagModel[] {

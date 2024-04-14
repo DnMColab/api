@@ -17,8 +17,9 @@ import {
 import {
   ProfileCreatePath,
   ProfileGetByIdPath,
+  ProfilesSearchPath,
   ProfileGetCurrentPath,
-  ProfilesGetPath,
+  ProfileUpdatePath,
 } from 'src/swagger/paths/profile.paths';
 import { ProfileCreateDTO, ProfileUpdateDTO } from 'src/DTO/profile.dto';
 import { JwtGuard } from 'src/guards/jwt.rest.guard';
@@ -42,6 +43,7 @@ export class ProfileController {
 
   @UseGuards(JwtGuard, ProfileExistGuard)
   @Put('/update')
+  @ProfileUpdatePath()
   public async updateProfile(
     @Body(new ZodPipe(ProfileUpdateValidation)) data: ProfileUpdateDTO,
     @Req() req: Request & { account: { id: string } },
@@ -56,15 +58,47 @@ export class ProfileController {
     return this.profileService.getProfile(req.account.id);
   }
 
+  @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/search')
-  @ProfilesGetPath()
-  public async getProfiles(
+  @ProfilesSearchPath()
+  public async searchProfiles(
     @Body(new ZodPipe(ProfilesGetValidation))
     data: ProfileSearchParameters,
   ) {
     return this.profileService.getProfiles(data);
   }
 
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Post('/:id/follow')
+  public async followProfile(
+    @Param('id') id: string,
+    @Req() req: Request & { account: { id: string } },
+  ) {
+    return this.profileService.followProfile(id, req.account.id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Get('/:id/followers')
+  public async getFollowers(@Param('id') id: string) {
+    return this.profileService.getFollowers(id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Get('/:id/following')
+  public async getFollowing(@Param('id') id: string) {
+    return this.profileService.getFollowing(id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Get('/:id/unfollow')
+  public async unfollowProfile(
+    @Param('id') id: string,
+    @Req() req: Request & { account: { id: string } },
+  ) {
+    return this.profileService.unfollowProfile(id, req.account.id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
   @Get('/:id')
   @ProfileGetByIdPath()
   public async getProfileById(@Param('id') id: string) {

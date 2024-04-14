@@ -1,11 +1,9 @@
-import { TagDTO } from './tag.dto';
-
 export interface NoteDTO {
   id: string;
 
   body: string;
 
-  tags?: TagDTO[];
+  tags?: { name: string }[];
 
   parentId?: string;
   authorId: string;

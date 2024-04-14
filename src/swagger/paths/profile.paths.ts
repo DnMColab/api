@@ -5,10 +5,13 @@ import {
   ApiBody,
   ApiParam,
   ApiResponse,
+  getSchemaPath,
+  ApiExtraModels,
 } from '@nestjs/swagger';
 
 import {
   ProfileCreateDTOSchema,
+  ProfileDTOSchema,
   ProfileSearchSchema,
   ProfileUpdateDTOSchema,
 } from '../schemas/profile.schemas';
@@ -30,6 +33,7 @@ export function ProfileGetByIdPath() {
       operationId: 'proto.rest.profile.getById',
       summary: 'Get a profile by id',
     }),
+    ApiBearerAuth('Bearer'),
     ApiParam({ name: 'id', type: 'string', description: 'Profile id' }),
   );
 }
@@ -40,6 +44,7 @@ export function ProfileGetCurrentPath() {
       operationId: 'proto.rest.profile.getCurrent',
       summary: 'Get current profile',
     }),
+
     ApiBearerAuth('Bearer'),
   );
 }
@@ -55,12 +60,14 @@ export function ProfileUpdatePath() {
   );
 }
 
-export function ProfilesGetPath() {
+export function ProfilesSearchPath() {
   return applyDecorators(
+    ApiExtraModels(ProfileDTOSchema),
     ApiOperation({
-      operationId: 'proto.rest.profile.getMany',
-      summary: 'Get profiles',
+      operationId: 'proto.rest.profile.search',
+      summary: 'Search for profiles',
     }),
+    ApiBearerAuth('Bearer'),
     ApiBody({
       type: ProfileSearchSchema,
     }),
@@ -69,7 +76,7 @@ export function ProfilesGetPath() {
       schema: {
         type: 'array',
         items: {
-          $ref: '#/components/schemas/ProfileDTOSchema',
+          $ref: getSchemaPath(ProfileDTOSchema),
         },
       },
     }),

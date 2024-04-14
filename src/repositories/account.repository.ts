@@ -31,7 +31,7 @@ export class AccountRepository {
     });
   }
 
-  async updateAccount(id: string, data: AccountUpdateDTO) {
+  async updateAccount(id: string, data: AccountUpdateDTO): Promise<AccountDTO> {
     return this.prisma.account.update({
       where: {
         id,
@@ -40,7 +40,29 @@ export class AccountRepository {
     });
   }
 
-  async deleteAccount(id: string) {
+  async changeEmail(id: string, email: string): Promise<AccountDTO> {
+    return this.prisma.account.update({
+      where: {
+        id,
+      },
+      data: {
+        email,
+      },
+    });
+  }
+
+  async changePassword(id: string, passwordHash: string): Promise<AccountDTO> {
+    return this.prisma.account.update({
+      where: {
+        id,
+      },
+      data: {
+        password: passwordHash,
+      },
+    });
+  }
+
+  async deleteAccount(id: string): Promise<AccountDTO> {
     return this.prisma.account.delete({
       where: {
         id,

@@ -7,31 +7,31 @@ import {
 } from 'src/DTO/profile.dto';
 
 export class ProfileDTOSchema implements ProfileDTO {
-  @ApiProperty()
+  @ApiProperty({ format: 'cuid' })
   id: string;
 
   @ApiProperty({ required: false })
   bio?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, format: 'url' })
   avatarUrl?: string;
 
-  @ApiProperty()
+  @ApiProperty({ minLength: 4, maxLength: 32 })
   profileName: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date', example: '2000-01-01' })
   birthday: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'boolean' })
   verified: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'cuid' })
   accountId: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date-time' })
   updatedAt: Date;
 }
 
@@ -39,13 +39,13 @@ export class ProfileCreateDTOSchema implements ProfileCreateDTO {
   @ApiProperty({ required: false })
   bio?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, format: 'url' })
   avatarUrl?: string;
 
-  @ApiProperty()
+  @ApiProperty({ minLength: 4, maxLength: 32 })
   profileName: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', format: 'date', example: '2000-01-01' })
   birthday: string;
 }
 
@@ -53,25 +53,27 @@ export class ProfileUpdateDTOSchema implements ProfileUpdateDTO {
   @ApiProperty({ required: false })
   bio?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, format: 'url' })
   profileName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, format: 'url' })
   birthday?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: 'boolean' })
   verified?: boolean;
 }
 
-class ProfileSearchWhere {
-  @ApiProperty({ enum: ['insensitive'] })
+class ProfileNameSearchParams {
+  @ApiProperty({ enum: ['insensitive'], required: false })
   mode?: 'insensitive';
 
+  @ApiProperty({ type: 'string' })
+  contains: string;
+}
+
+class ProfileSearchWhere {
   @ApiProperty()
-  profileName: {
-    contains: string;
-    mode?: 'insensitive';
-  };
+  profileName: ProfileNameSearchParams;
 }
 
 class ProfileSearchOrderBy {
@@ -80,15 +82,15 @@ class ProfileSearchOrderBy {
 }
 
 export class ProfileSearchSchema {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   where: ProfileSearchWhere;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   orderBy: ProfileSearchOrderBy;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   skip: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   take: number;
 }

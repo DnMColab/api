@@ -16,7 +16,7 @@ export class NoteDTOSchema implements NoteDTO {
   @ApiProperty({ required: false })
   parentId?: string;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'cuid' })
   authorId: string;
 
   @ApiProperty()
