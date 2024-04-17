@@ -5,6 +5,31 @@ import { PrismaClient } from '@prisma/client';
 export class LikeRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  getLikesByNoteId(noteId: string) {
+    return this.prisma.like.findMany({
+      where: {
+        noteId,
+      },
+    });
+  }
+
+  getLikesByProfileId(profileId: string) {
+    return this.prisma.like.findMany({
+      where: {
+        profileId,
+      },
+    });
+  }
+
+  getLike(profileId: string, noteId: string) {
+    return this.prisma.like.findFirst({
+      where: {
+        profileId,
+        noteId,
+      },
+    });
+  }
+
   public async createLike(profileId: string, noteId: string) {
     return this.prisma.like.create({
       data: {

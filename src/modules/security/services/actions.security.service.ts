@@ -36,10 +36,7 @@ export class ActionsSecurityService {
         await this.utils.checkVerificationRequest(accountId);
 
       if (securityRequest.token !== token) {
-        throw new HttpException(
-          { message: INVALID_TOKEN_ERROR },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException(INVALID_TOKEN_ERROR, HttpStatus.BAD_REQUEST);
       }
 
       const profile = await this.utils.checkProfile(
@@ -48,7 +45,10 @@ export class ActionsSecurityService {
       );
 
       if (profile === null) {
-        return { message: PROFILE_ALREADY_VERIFIED_ERROR };
+        throw new HttpException(
+          PROFILE_ALREADY_VERIFIED_ERROR,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       await this.profileRepository.updateProfile(profile.id, {
@@ -78,17 +78,11 @@ export class ActionsSecurityService {
       securityRequest.token !== token ||
       securityRequest.type !== RequestType.EMAIL_CHANGE
     ) {
-      throw new HttpException(
-        { message: INVALID_TOKEN_ERROR },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException(INVALID_TOKEN_ERROR, HttpStatus.BAD_REQUEST);
     }
 
     if (accountWithNewEmail) {
-      throw new HttpException(
-        { message: 'Email already in use' },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Email already in use', HttpStatus.BAD_REQUEST);
     }
 
     await this.accountRepository.changeEmail(accountId, email);
@@ -106,10 +100,7 @@ export class ActionsSecurityService {
       securityRequest.token !== token ||
       securityRequest.type !== RequestType.PASSWORD_RESET
     ) {
-      throw new HttpException(
-        { message: INVALID_TOKEN_ERROR },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException(INVALID_TOKEN_ERROR, HttpStatus.BAD_REQUEST);
     }
 
     const saltRounds = this.configService.get<number>('BCRYPT_SALT_ROUNDS', 16);

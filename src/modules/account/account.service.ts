@@ -32,7 +32,7 @@ export class AccountService {
     if (existingAccount) {
       throw new HttpException(
         ACCOUNT_ALREADY_EXISTS_ERROR,
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
       );
     }
 

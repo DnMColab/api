@@ -46,7 +46,7 @@ export class RequestsSecurityService {
     ) {
       throw new HttpException(
         VERIFICATION_EMAIL_ALREADY_SENT_ERROR,
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
       );
     }
 
@@ -86,7 +86,7 @@ export class RequestsSecurityService {
     if (!securityRequest) {
       throw new HttpException(
         VERIFICATION_REQUEST_NOT_FOUND_ERROR,
-        HttpStatus.NOT_FOUND,
+        HttpStatus.CONFLICT,
       );
     }
 

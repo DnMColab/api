@@ -7,6 +7,7 @@ import { NoteService } from './note.service';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { PrismaClient } from '@prisma/client';
 import { AccountRepository } from 'src/repositories/account.repository';
+import { LikeRepository } from 'src/repositories/like.repository';
 
 @Module({
   controllers: [NoteController],
@@ -14,6 +15,7 @@ import { AccountRepository } from 'src/repositories/account.repository';
     AccountRepository,
     ProfileRepository,
     NoteRepository,
+    LikeRepository,
     TagRepository,
     PrismaClient,
     NoteService,

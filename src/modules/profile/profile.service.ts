@@ -73,7 +73,7 @@ export class ProfileService {
     if (profileExists || profileExistsByProfileName) {
       throw new HttpException(
         PROFILE_ALREADY_EXISTS_ERROR,
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
       );
     }
 
@@ -114,7 +114,7 @@ export class ProfileService {
     );
 
     if (isFollowing) {
-      throw new HttpException('Already following', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Already following', HttpStatus.CONFLICT);
     }
 
     const follow = await this.followRepository.followProfile(
@@ -133,6 +133,15 @@ export class ProfileService {
 
     if (!profile) {
       throw new HttpException(PROFILE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
+    }
+
+    const isFollowing = await this.followRepository.isFollowing(
+      profileId,
+      account.id,
+    );
+
+    if (!isFollowing) {
+      throw new HttpException('Not following', HttpStatus.CONFLICT);
     }
 
     await this.followRepository.unfollowProfile(profileId, account.id);

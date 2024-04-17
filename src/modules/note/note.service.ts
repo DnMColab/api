@@ -134,6 +134,15 @@ export class NoteService {
       throw new HttpException(NOTE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
     }
 
+    const existsLike = await this.likeRepository.getLike(profile.id, noteId);
+
+    if (existsLike) {
+      throw new HttpException(
+        'You already liked this note',
+        HttpStatus.CONFLICT,
+      );
+    }
+
     const like = await this.likeRepository.createLike(profile.id, noteId);
 
     return like;
@@ -147,6 +156,15 @@ export class NoteService {
 
     if (!noteExists) {
       throw new HttpException(NOTE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND);
+    }
+
+    const existsLike = await this.likeRepository.getLike(profile.id, noteId);
+
+    if (!existsLike) {
+      throw new HttpException(
+        'You have not liked this note',
+        HttpStatus.CONFLICT,
+      );
     }
 
     const like = await this.likeRepository.deleteLike(profile.id, noteId);

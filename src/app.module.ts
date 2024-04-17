@@ -12,6 +12,7 @@ import { NoteRepository } from './repositories/note.repository';
 import { PrismaClient } from '@prisma/client';
 import { TagRepository } from './repositories/tag.repository';
 import { AccountRepository } from './repositories/account.repository';
+import { LikeRepository } from './repositories/like.repository';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AccountRepository } from './repositories/account.repository';
     NoteService,
     ProfileRepository,
     NoteRepository,
+    LikeRepository,
     PrismaClient,
     TagRepository,
     AccountRepository,
