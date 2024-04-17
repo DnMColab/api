@@ -26,8 +26,10 @@ import { JwtGuard } from 'src/guards/jwt.rest.guard';
 import { ProfileSearchParameters, ProfileService } from './profile.service';
 import { ZodPipe } from 'src/pipes/zod.pipe';
 import { ProfileExistGuard } from 'src/guards/profileexist.guard';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('profile')
+@ApiTags('profile')
 export class ProfileController {
   constructor(public readonly profileService: ProfileService) {}
 

@@ -11,6 +11,28 @@ import {
   NoteUpdateDTOSchema,
 } from '../schemas/note.schemas';
 
+export function NoteLikePath() {
+  return applyDecorators(
+    ApiOperation({
+      operationId: 'proto.rest.note.like',
+      summary: 'Like a note',
+    }),
+    ApiBearerAuth('Bearer'),
+    ApiParam({ name: 'id', type: 'string', description: 'Note id' }),
+  );
+}
+
+export function NoteUnlikePath() {
+  return applyDecorators(
+    ApiOperation({
+      operationId: 'proto.rest.note.unlike',
+      summary: 'Unlike a note',
+    }),
+    ApiBearerAuth('Bearer'),
+    ApiParam({ name: 'id', type: 'string', description: 'Note id' }),
+  );
+}
+
 export function NoteCreatePath() {
   return applyDecorators(
     ApiOperation({

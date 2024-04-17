@@ -26,14 +26,18 @@ import {
   NoteDeletePath,
   NoteGetByIdPath,
   NoteGetFeedPath,
+  NoteLikePath,
+  NoteUnlikePath,
   NoteUpdatePath,
   NotesGetByAuthorIdPath,
   NotesGetByParentIdPath,
   NotesGetByTagsPath,
   NotesSearchPath,
 } from 'src/swagger/paths/note.paths';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('note')
+@ApiTags('note')
 export class NoteController {
   constructor(public readonly noteService: NoteService) {}
 
@@ -99,6 +103,26 @@ export class NoteController {
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
   ) {
     return this.noteService.getNotesByAuthorId(authorId, skip ?? 0, take ?? 50);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Post('/:noteId/like')
+  @NoteLikePath()
+  public async likeNote(
+    @Param('noteId') noteId: string,
+    @Req() req: Request & { account: { id: string } },
+  ) {
+    return this.noteService.likeNote(noteId, req.account.id);
+  }
+
+  @UseGuards(JwtGuard, ProfileExistGuard)
+  @Post('/:noteId/unlike')
+  @NoteUnlikePath()
+  public async unlikeNote(
+    @Param('noteId') noteId: string,
+    @Req() req: Request & { account: { id: string } },
+  ) {
+    return this.noteService.unlikeNote(noteId, req.account.id);
   }
 
   @UseGuards(JwtGuard, ProfileExistGuard)

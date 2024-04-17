@@ -9,8 +9,10 @@ import { AccountCreateDTO, AccountDTO } from 'src/DTO/account.dto';
 import { AccountService } from './account.service';
 import { ZodPipe } from 'src/pipes/zod.pipe';
 import { JwtGuard } from 'src/guards/jwt.rest.guard';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('account')
+@ApiTags('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
